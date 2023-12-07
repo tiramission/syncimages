@@ -48,7 +48,7 @@ jobs:
           command: |
             podman run \
               -v ~/.docker/config.json:/auth.json:ro \
-              docker://quay.io/skopeo/stable:v1.10.0 sync \
+              docker://quay.io/skopeo/stable:latest sync \
               --all \
               --retry-times 10 \
               --authfile /auth.json \
