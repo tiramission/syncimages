@@ -1,9 +1,12 @@
 name: Sync devcontainer images
 
 on:
-  schedule:
-  - cron: "0 2 * * *"
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Manual Run Workflow'
+        required: true
+        default: 'production'
 
 jobs:
   sync:
