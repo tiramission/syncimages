@@ -34,6 +34,7 @@ jobs:
               docker://quay.io/skopeo/stable:v1.10.0 copy \
               --retry-times 10 \
               --authfile /auth.json \
+              --multi-arch all \
               docker://${{ inputs.src_image }} \
               docker://registry.cn-hangzhou.aliyuncs.com/jaign/${{ inputs.des_image_name }}
       - name: Report
