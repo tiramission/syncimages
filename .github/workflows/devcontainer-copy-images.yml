@@ -14,20 +14,20 @@ jobs:
       fail-fast: false
       matrix:
         repo:
-          - anaconda
-          - base
-          - cpp
-          - dotnet
-          - go
-          - java
-          - javascript-node
-          - jekyll
-          - miniconda
-          - php
-          - python
-          - ruby
-          - rust
-          - typescript-node
+          # - anaconda
+          # - base
+          # - cpp
+          # - dotnet
+          # - go
+          # - java
+          # - javascript-node
+          # - jekyll
+          # - miniconda
+          # - php
+          # - python
+          # - ruby
+          # - rust
+          # - typescript-node
           - universal
     runs-on: ubuntu-latest
     steps:
@@ -55,8 +55,8 @@ jobs:
                 --multi-arch all \
                 --retry-times 10 \
                 --authfile /auth.json \
-                mcr.microsoft.com/devcontainers/${{ matrix.repo }}:$tag \
-                registry.cn-hangzhou.aliyuncs.com/jaign-devcontainers/${{ matrix.repo }}:$tag
+                docker://mcr.microsoft.com/devcontainers/${{ matrix.repo }}:$tag \
+                docker://registry.cn-hangzhou.aliyuncs.com/jaign-devcontainers/${{ matrix.repo }}:$tag
             done
 
       - name: Report
