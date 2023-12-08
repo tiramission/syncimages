@@ -47,7 +47,7 @@ jobs:
           max_attempts: 10
           command: |
             set -x
-            tags=$(curl -s https://mcr.microsoft.com/v2/devcontainers/base/tags/list | jq -r '.tags[]')
+            tags=$(curl -s https://mcr.microsoft.com/v2/devcontainers/${{ matrix.repo }}/tags/list | jq -r '.tags[]')
             for tag in $tags; do
               podman run --rm \
                 -v ~/.docker/config.json:/auth.json:ro \
