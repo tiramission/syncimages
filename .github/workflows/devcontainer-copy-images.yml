@@ -1,0 +1,64 @@
+name: Copy devcontainer images
+
+on:
+  workflow_dispatch:
+    inputs:
+      manual:
+        required: true
+        description: "手动运行"
+        default: "manual"
+
+jobs:
+  sync:
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - anaconda
+          - base
+          - cpp
+          - dotnet
+          - go
+          - java
+          - javascript-node
+          - jekyll
+          - miniconda
+          - php
+          - python
+          - ruby
+          - rust
+          - typescript-node
+          - universal
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: registry.cn-hangzhou.aliyuncs.com
+          username: ${{ secrets.ALIYUN_ACR_USERNAME }}
+          password: ${{ secrets.ALIYUN_ACR_PASSWORD }}
+      - name: Sync
+        id: sync
+        uses: nick-fields/retry@v2.8.2
+        with:
+          timeout_minutes: 360
+          max_attempts: 10
+          command: |
+            set -x
+            tags=$(curl -s https://mcr.microsoft.com/v2/devcontainers/base/tags/list | jq -r '.tags[]')
+            for tag in $tags; do
+              podman run --rm \
+                -v ~/.docker/config.json:/auth.json:ro \
+                docker://quay.io/skopeo/stable:latest copy \
+                --multi-arch all \
+                --retry-times 10 \
+                --authfile /auth.json \
+                mcr.microsoft.com/devcontainers/${{ matrix.repo }}:$tag \
+                registry.cn-hangzhou.aliyuncs.com/jaign-devcontainers/${{ matrix.repo }}:$tag
+            done
+
+      - name: Report
+        run: |
+          echo "Total attempts: ${{ steps.sync.outputs.total_attempts }}"
