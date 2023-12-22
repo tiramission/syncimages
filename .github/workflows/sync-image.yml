@@ -39,4 +39,5 @@ jobs:
               docker://registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:${{ inputs.des_tag }}
       - name: Report
         run: |
+          echo "Image name: registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:${{ inputs.des_tag }}"
           echo "Total attempts: ${{ steps.copy.outputs.total_attempts }}"
