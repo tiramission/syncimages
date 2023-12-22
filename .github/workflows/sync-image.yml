@@ -6,9 +6,9 @@ on:
       src_image:
         required: true
         description: "源镜像"
-      des_image_name:
+      des_tag:
         required: true
-        description: 目标镜像名和版本
+        description: 目标镜像名版本，完整镜像名: registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:[tag]
 
 jobs:
   sync:
@@ -36,7 +36,7 @@ jobs:
               --authfile /auth.json \
               --multi-arch all \
               docker://${{ inputs.src_image }} \
-              docker://registry.cn-hangzhou.aliyuncs.com/jaign/${{ inputs.des_image_name }}
+              docker://registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:${{ inputs.des_tag }}
       - name: Report
         run: |
           echo "Total attempts: ${{ steps.copy.outputs.total_attempts }}"
