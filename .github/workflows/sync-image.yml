@@ -8,7 +8,7 @@ on:
         description: "源镜像"
       des_tag:
         required: true
-        description: 目标镜像名版本，完整镜像名: registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:[tag]
+        description: "目标镜像名版本，完整镜像名: registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:[tag]"
 
 jobs:
   sync:
