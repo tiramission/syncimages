@@ -37,7 +37,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: registry.cn-hangzhou.aliyuncs.com
-          username: ${{ secrets.ALIYUN_ACR_USERNAME }}
+          username: jaign
           password: ${{ secrets.ALIYUN_ACR_PASSWORD }}
       - name: Sync
         id: sync
