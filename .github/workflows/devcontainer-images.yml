@@ -55,7 +55,7 @@ jobs:
               --src docker \
               --dest docker \
               mcr.microsoft.com/devcontainers/${{ matrix.repo }} \
-              registry.cn-hangzhou.aliyuncs.com/jaign-devcontainers
+              registry.cn-hangzhou.aliyuncs.com/mcr-devcontainers
       - name: Report
         run: |
           echo "Total attempts: ${{ steps.sync.outputs.total_attempts }}"
