@@ -46,7 +46,7 @@ jobs:
           timeout_minutes: 360
           max_attempts: 10
           command: |
-            podman run \
+            podman run --rm \
               -v ~/.docker/config.json:/auth.json:ro \
               docker://quay.io/skopeo/stable:latest sync \
               --all \
@@ -59,3 +59,9 @@ jobs:
       - name: Report
         run: |
           echo "Total attempts: ${{ steps.sync.outputs.total_attempts }}"
+          echo "This job was run for the repository: ${{ matrix.repo }}"
+      - name: List Tags
+        run: |
+          podman run --rm \
+            docker://quay.io/skopeo/stable:latest list-tags \
+            docker://mcr.microsoft.com/devcontainers/${{ matrix.repo }}
