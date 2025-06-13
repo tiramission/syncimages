@@ -3,6 +3,16 @@ name: Sync Image
 on:
   workflow_dispatch:
     inputs:
+      runs_on:
+        type: choice
+        required: true
+        description: "运行环境，默认 ubuntu-latest"
+        default: "ubuntu-latest"
+        options:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+          - self-hosted
       src_image:
         required: true
         description: "源镜像"
@@ -12,7 +22,7 @@ on:
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs_on }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4.1.2
