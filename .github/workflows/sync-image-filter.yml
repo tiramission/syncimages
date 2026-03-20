@@ -28,7 +28,7 @@ jobs:
         uses: imjasonh/setup-crane@v0.1
       - name: Crane Auth Login
         run: |
-          echo "${auth_token}" | crane auth login registry.cn-hangzhou.aliyuncs.com --username jaign --password-stdin
+          echo "${{ secrets.ALIYUN_ACR_PASSWORD }}" | crane auth login registry.cn-hangzhou.aliyuncs.com --username jaign --password-stdin
           crane index filter --platform linux/amd64 --platform linux/arm64 ${{ inputs.src_image }} \
             --tag registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:${{ inputs.des_tag }}              
       - name: Report
