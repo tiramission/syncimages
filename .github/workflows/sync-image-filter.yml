@@ -26,26 +26,11 @@ jobs:
     steps:
       - name: Setup Crane
         uses: imjasonh/setup-crane@v0.1
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: registry.cn-hangzhou.aliyuncs.com
-          username: jaign
-          password: ${{ secrets.ALIYUN_ACR_PASSWORD }}
-      - name: Copy
-        id: copy
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 360
-          max_attempts: 10
-          command: |
-            crane index filter \
-              --platform linux/amd64 \
-              --platform linux/arm64 \
-              ${{ inputs.src_image }} \
-              --tag \
-              registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:${{ inputs.des_tag }}
+      - name: Crane Auth Login
+        run: |
+          echo "${auth_token}" | crane auth login registry.cn-hangzhou.aliyuncs.com --username jaign --password-stdin
+          crane index filter --platform linux/amd64 --platform linux/arm64 ${{ inputs.src_image }} \
+            --tag registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:${{ inputs.des_tag }}              
       - name: Report
         run: |
           echo "Image name: registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:${{ inputs.des_tag }}"
-          echo "Total attempts: ${{ steps.copy.outputs.total_attempts }}"
