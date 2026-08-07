@@ -22,6 +22,8 @@ description: "通过触发 syncimages 仓库的 GitHub Actions，将外部镜像
 
 把源镜像的所有架构（multi-arch）原样同步到 `jaign-mirror/default:[des_tag]`。底层用 skopeo copy --multi-arch all，带重试（最多 10 次，超时 360 分钟）。
 
+**源镜像预检查优化**：Copy 步骤前先用 `skopeo inspect --raw --no-creds` 无重试地验证源镜像是否存在，不存在立即以 `::error::` 失败退出，避免进入 10 次重试白白浪费时间（单源镜像不存在场景通常 <10 秒结束）。
+
 **适用**：需要保留镜像全部架构（amd64/arm64/ppc64le/s390x 等）。
 
 ```powershell
@@ -47,6 +49,8 @@ gh workflow run sync-image.yml `
 ### 模式 2：过滤架构同步（sync-image-filter.yml）
 
 只同步 `linux/amd64` 和 `linux/arm64` 两个平台，用 regctl index create 重建 manifest list。目标同样是 `jaign-mirror/default:[des_tag]`。
+
+**源镜像预检查优化**：Create Image 步骤前先用 `crane manifest`（优先按 amd64/arm64，回退到完整 manifest）无重试地验证源镜像是否存在，不存在立即以 `::error::` 失败退出，避免后续 regctl 命令反复超时重试。
 
 **适用**：源镜像含多余架构（如 windows/amd64），只想要 Linux 两个主架构；或需要减小同步体积。
 
@@ -120,7 +124,8 @@ docker manifest inspect registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:<
 3. **异步执行**：`gh workflow run` 只负责触发，同步是否成功要看 run 状态。重要同步务必 `gh run watch` 确认。
 4. **全架构模式体积大**：模式 1 同步全部架构，大镜像可能跑很久（超时上限 6 小时）。
 5. **网络**：GitHub Actions runner 拉源镜像 + 推阿里云，源镜像越接近国内越快；docker.io 的镜像偶尔会超时，靠重试机制兜底。
-6. **本地 docker build/push 规则不同**：若用户要求本地构建后推送，遵循 `jaign-mirror/build` 命名规则（见会话约定）；本 skill 仅处理「同步外部已有镜像」场景，目标是 `jaign-mirror/default`。
+6. **源镜像不存在快速失败**：模式 1 & 2 已加「Verify Source Image」预检查步骤，无重试；若镜像名/Tag 拼写错误，通常几秒内就以明确错误信息结束，不会进入 Copy 的 10 次循环。
+7. **本地 docker build/push 规则不同**：若用户要求本地构建后推送，遵循 `jaign-mirror/build` 命名规则（见会话约定）；本 skill 仅处理「同步外部已有镜像」场景，目标是 `jaign-mirror/default`。
 
 ## 决策流程
 
