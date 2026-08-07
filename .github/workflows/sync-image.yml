@@ -1,0 +1,71 @@
+name: Sync Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      runs_on:
+        type: choice
+        required: true
+        description: "运行环境，默认 ubuntu-latest"
+        default: "ubuntu-latest"
+        options:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+          - self-hosted
+      src_image:
+        required: true
+        description: "源镜像"
+      des_tag:
+        required: true
+        description: "目标镜像名版本，完整镜像名: registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:[tag]"
+
+jobs:
+  sync:
+    runs-on: ${{ inputs.runs_on }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Aliyun ACR
+        uses: docker/login-action@v3
+        with:
+          registry: registry.cn-hangzhou.aliyuncs.com
+          username: jaign
+          password: ${{ secrets.ALIYUN_ACR_PASSWORD }}
+
+      - name: Verify Source Image
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC="${{ inputs.src_image }}"
+          echo "::notice::Verifying source image: $SRC"
+          if ! podman run --rm \
+              docker://quay.io/skopeo/stable:latest \
+              inspect --raw --no-creds --retry-times 2 \
+              "docker://$SRC" > /dev/null; then
+            echo "::error::Source image does not exist or is not reachable: $SRC"
+            exit 1
+          fi
+          echo "::notice::Source image $SRC is reachable, proceeding to copy."
+
+      - name: Copy
+        id: copy
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 360
+          max_attempts: 10
+          command: |
+            podman run \
+              -v ~/.docker/config.json:/auth.json:ro \
+              docker://quay.io/skopeo/stable:latest copy \
+              --retry-times 10 \
+              --authfile /auth.json \
+              --multi-arch all \
+              docker://${{ inputs.src_image }} \
+              docker://registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:${{ inputs.des_tag }}
+
+      - name: Report
+        run: |
+          echo "Image name: registry.cn-hangzhou.aliyuncs.com/jaign-mirror/default:${{ inputs.des_tag }}"
+          echo "Total attempts: ${{ steps.copy.outputs.total_attempts }}"
